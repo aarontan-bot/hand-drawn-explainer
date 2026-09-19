@@ -32,6 +32,7 @@ display, and implement`，所以可以随本仓库分发。两条要注意：
 | Python 3 + Pillow、NumPy | 图像处理与量化 | — |
 | 任一 TTS 服务 | 配音（`lib/synthesize.py` 当前对接火山引擎，可替换） | 需自备密钥 |
 | 任一生图模型（可选） | 插画；走 `illus_mode: svg` 时完全不需要 | 需自备额度 |
+| OpenAI Codex CLI（可选） | `references/03-illustration.md` 列的生图路径之一（`codex exec` + 内置 image_gen） | 可换成任何生图网页或 API |
 
 ## 相关项目
 

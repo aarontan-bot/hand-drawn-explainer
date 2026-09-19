@@ -97,6 +97,11 @@ export HDE_ORACLE_SCRIPTS=/path/to/你的脚本目录
 - 不保证生图模型每次都画对：插画要人验收，不合格的重出那一张
 - 逐笔「边讲边画」不在本仓库范围内，见 [`references/stroke-route.md`](references/stroke-route.md)
 
+## 致谢
+
+- 画面靠 [rough.js](https://roughjs.com/)（MIT）画手绘墨线、[GSAP](https://gsap.com/) 驱动时间轴，两者是程序动画层的基础；268 种编号手绘风格来自 [yang0/handraw-style](https://github.com/yang0/handraw-style)（MIT）。
+- 逐笔「边讲边画」路线由 [hi-nikola/hand-drawn-explainer-video-nikola](https://github.com/hi-nikola/hand-drawn-explainer-video-nikola)（Apache-2.0）承担，[`references/stroke-route.md`](references/stroke-route.md) 把那条路线整个转交过去。两个项目是同一领域各自独立的实现，本仓库不含它的任何代码；感谢它把这件事开源出来。
+
 ## 许可
 
 本仓库 [MIT](LICENSE)。随仓库分发的第三方组件及其许可见 [THIRD-PARTY.md](THIRD-PARTY.md)。
