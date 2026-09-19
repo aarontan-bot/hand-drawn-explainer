@@ -1,0 +1,6 @@
+{
+ "leak_phrases": ["论文题目", "原材料", "原课程", "据原视频", "原稿归纳", "原作者", "UP 主", "参考资料"],
+ "forbidden_phrases": [],
+ "volatile_number_patterns": ["GPT-?\\d", "v\\d+\\.\\d", "\\d+\\s*[kK]\\s*token", "\\d+\\s*万\\s*token", "\\d+×\\d+\\s*像素"],
+ "illus_text_words": ["写着", "文字", "字样", "数字", "标题为", "写下", "写字"]
+}

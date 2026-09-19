@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+node_modules/
+*.egg-info/
+
+# 本机跑 smoke / 出片时的临时产物，不该进仓库
+/tmp/
+*.mp4
+*.mp3
+
+# handraw 风格参考图（23 MB / 334 张）按需拉取，不进仓库历史：
+#   zsh vendor/handraw-style/fetch-images.sh
+vendor/handraw-style/images/
+
+# 自己的预设（品牌资产、受众口径、音色、已交付作品截图）不该进公开仓库。
+# 直接放在 profiles/ 下用，然后把目录名加进 .git/info/exclude —— 写在那里不会被提交，
+# 也不会让仓库的 .gitignore 暴露你的预设叫什么。例如：
+#   echo 'profiles/my-brand/'  >> .git/info/exclude
+#   echo 'profiles/my-brand.md' >> .git/info/exclude
+#   echo '_chain/'             >> .git/info/exclude

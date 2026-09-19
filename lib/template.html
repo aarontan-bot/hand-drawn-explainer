@@ -1,0 +1,37 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>手绘讲解视频</title>
+<script src="assets/gsap.min.js"></script><script src="assets/rough.js"></script><style>
+@font-face{font-family:'PingFang SC';src:local('PingFang SC Regular'),local('PingFangSC-Regular');font-weight:400}
+@font-face{font-family:'PingFang SC';src:local('PingFang SC Medium'),local('PingFangSC-Medium');font-weight:500}
+@font-face{font-family:'PingFang SC';src:local('PingFang SC Semibold'),local('PingFangSC-Semibold');font-weight:600}
+*{box-sizing:border-box}
+body{margin:0;background:#000}
+#main{width:1920px;height:1080px;position:relative;overflow:hidden;background:#FFFFFF;font-family:'PingFang SC',sans-serif;color:#1E1C1A}
+.brand{position:absolute;left:64px;top:40px;width:240px;z-index:30}
+.series{position:absolute;right:72px;top:54px;font-size:22px;letter-spacing:2px;color:#5A5348;z-index:30}
+.scene{position:absolute;inset:0;visibility:hidden}
+.stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible}
+.art{position:absolute;inset:0;transform-origin:50% 100%;-webkit-mask-image:linear-gradient(to right,transparent,#000 3%,#000 97%,transparent),linear-gradient(to bottom,transparent,#000 3%,#000 97%,transparent);-webkit-mask-composite:source-in;mask-composite:intersect}
+.half{position:absolute;inset:0;background-size:1920px 1080px}
+.h{position:absolute;opacity:0;line-height:1.35}
+.note{position:absolute;opacity:0;font-size:40px;font-weight:500;line-height:1.5;padding:0}
+.hl{background-image:linear-gradient(rgba(245,216,74,.75),rgba(245,216,74,.75));background-repeat:no-repeat;background-position:0 88%;background-size:0% 42%;padding:0 3px}
+.pill{position:absolute;padding:6px 20px;border-radius:40px;background:#fff;border:3px solid #1E1C1A;font-size:36px;font-weight:600;opacity:0}
+.pill.late{border-color:#D9483B;color:#D9483B}
+.capbar{position:absolute;left:0;right:0;bottom:0;height:194px;z-index:20;background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,.92) 34%,#fff 100%)}
+.caption{position:absolute;left:120px;right:120px;bottom:70px;text-align:center;font-size:40px;line-height:1.45;visibility:hidden;z-index:22;font-weight:500}
+.progress{position:absolute;bottom:0;left:0;height:5px;width:1920px;background:#2F6FDB;transform-origin:left;z-index:30}
+</style></head><body><main id="main" data-composition-id="main" data-start="0" data-duration="__DURATION__" data-width="1920" data-height="1080" data-fps="30">
+<img class="brand" alt="Logo"><div class="series"></div>
+<div class="capbar"></div><div class="progress"></div>
+<audio id="narration" src="assets/narration.wav" data-start="0" data-duration="__DURATION__" data-volume="1"></audio>
+</main><script>
+const D=__DATA__,tl=gsap.timeline({paused:true}),main=document.getElementById('main');
+__SCENES_JS__
+// Logo 可选：D.logo 为 true 才挂载常驻角标图片，否则整个隐藏，避免 404
+if(D.logo){main.querySelector('.brand').src='assets/logo.png'}else{main.querySelector('.brand').style.display='none'}
+main.querySelector('.series').textContent=EP.series?`${EP.series}　·　第 ${EP.no} 集`:`第 ${EP.no} 集`;
+D.scenes.forEach(s=>{const sc=new Scene(s);(BUILD[s.kind]||(()=>{throw Error('no builder '+s.kind)}))(sc,s);sc.finish()});
+D.captions.forEach(c=>{const e=document.createElement('div');e.className='caption';e.textContent=c.text;main.append(e);tl.set(e,{visibility:'visible'},c.start);tl.set(e,{visibility:'hidden'},c.end)});
+tl.fromTo('.progress',{scaleX:0},{scaleX:1,duration:D.duration,ease:'none'},0);
+window.__timelines={main:tl};
+</script></body></html>

@@ -1,0 +1,8 @@
+[
+ {"no": 1, "kind": "title", "fixed": 8},
+ {"no": 2, "kind": "probe_icons", "fixed": 8},
+ {"no": 3, "kind": "probe_chars", "fixed": 8},
+ {"no": 4, "kind": "probe_notes", "fixed": 8},
+ {"no": 5, "kind": "probe_remember", "fixed": 8},
+ {"no": 6, "kind": "end", "fixed": 8}
+]

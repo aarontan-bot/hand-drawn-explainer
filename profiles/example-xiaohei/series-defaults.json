@@ -1,0 +1,6 @@
+{
+  "speaker": "<换成你的 TTS 音色 id>",
+  "style": "xiaohei",
+  "illus_mode": "image",
+  "characters": "<固定角色的英文设定，会原样拼进生图提示词；没有固定角色就留空字符串>"
+}

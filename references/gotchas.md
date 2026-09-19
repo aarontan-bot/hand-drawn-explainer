@@ -1,0 +1,57 @@
+# 坑表（现象 / 根因 / 修法；对应脚本已改的标 ✔，未改的标 ✘ 并写谁去改）
+
+任何报错先查这里。新坑按同样三段追加到对应小节，并**当场改对应脚本**。
+
+## 配音
+- **火山 TTS 静默截断**：某些句子（英文词 + 句号后紧接下一句）只合成前半段，meta 里 `complete` 仍为 true。根因：服务端句边界判断。修法：合成后立刻用词时间戳拼回文本与原文比对（✔ `synthesize.py`、`build.py` 都查）；同一段文本重合成会截在同一处，**改措辞**（把断句合并成一句）才能绕过。
+- 密钥文件缺失时脚本直接报错而不是回退到别的 TTS：这是设计，不要自动改用系统朗读。
+
+- 火山 TTS 偶发 `The read operation timed out`：一次请求超时会留下带 error 的 meta 文件并让整集合成中断。修法：再跑一次 `synthesize.py <集目录>`，脚本会把「有 error 且无音频」的残留清掉重发（✔ synthesize.py）；有音频的残留仍需人工看 meta。
+
+## 出图
+- **Codex 生图有账号用量上限**，撞上就是硬阻塞（一次提示两天后才恢复）。修法：出图清单自包含（脚手架已保证 ✔），随时换网页生图或其它 API；先出第 1 集验风格再批量。
+- `codex exec` 不加 `< /dev/null` 会卡在 "Reading additional input from stdin"。macOS 没有 `timeout` 命令。`--dangerously-bypass-approvals-and-sandbox` 会被安全分类器拦下，用 `-s workspace-write --add-dir ~/.codex` 就够。
+- 出图描述里出现"写着 / 文字 / 数字"会得到伪字（✔ `lint_script.py` 扫）。
+- 上游白板后端的手部素材笔杆上印着第三方文字，nikola vendor 里已替换为去字版；更新 vendor 快照要重新去字。
+
+- 代码画场景：角色没有手臂图元，"举 / 捧"要显式画一条手臂线连到道具，否则道具悬空像帽子；岔路、汇合这类空间关系要给具体贝塞尔坐标，只给文字描述会画成一束线（实测同一镜返工两次才对）。
+
+## 构建与程序层
+- **HyperFrames 版本**：`npx hyperframes` 默认拉最新（0.8.46 起参数变了：传目录不传 html），全系列锁 `npx hyperframes@0.8.20 check|render comp`（✔ 文档与命令都锁）。
+- **`peek.sh` 传相对路径会截出一张 ERR_INVALID_URL 错误页，而且 rc=0**，看图的人以为那就是本集画面。原先这条标着「✔ 脚本内检查」，实际脚本里一行检查都没有。修法：`E=${1:A}` 绝对化 + 找不到 `comp/index.html` 就 exit 2（✔ 2026-09-18 真改了）。
+- **`scaffold --profile` 不会合并预设的 `style` 与 `illus_mode`**：`DEFAULT_SERIES` 预填了内核缺省 `line`/`image`，而合并条件是「字段为空才补」，于是预设的画风被静默丢掉，生图提示词退回通用线稿前缀。修法：`DEFAULT_SERIES` 里这两项留空，缺省在使用点兜底（✔ 2026-09-18 已改）。
+- **`lint_script.py --episode-dir` 的制作模式从来没跑成功过**：按 `*.N-*.md` / `N.*.md` 找脚本，认不出 skill 自己规定的 `01-标题.md`。修法：改成「文件名第一段连续数字 == 集号」，三种命名都认（✔ 2026-09-18 已改）。
+- **`retime.py` 第一个参数是脚本目录不是单个 md**：传成文件时 glob 匹配不到，静默 rc=0 什么都不做，用的人以为回填过了、时间码其实还是手估的。修法：单文件也认，匹配不到就报错退出（✔ 2026-09-18 已改）。
+- 并行子代理共用脚本时固定的 `/tmp` 文件名会串台：临时名带 `$$`（✔ peek.sh）。
+- 程序层排版红线：内容出安全区会被字幕压住；数字只认 03-production §3（y ∈ [130, 860]），`shot_metrics.py` 按它报（✔）。
+- 触发短语太短会命中前文：`build.py` 按出现顺序 `find`，短语要能唯一定位；事件名与 `sc.at()` 不一致直接报错。
+- 老写法（每集自带 build/scenes/template 四件套）不再维护：新集一律共享 lib + shots.json + episode.js。
+- **`shot_metrics.py` 逐镜报 `JSONDecodeError: Expecting value: line 1 column 1`**：传了相对的集目录，`measure_one` 用 `f'file://{tmp}'` 拼出非法 URL，Chrome 打不开，`<title>` 里还是模板原文"手绘讲解视频"，解析即炸（peek.sh 同款坑）。修法：`run_episode` 里 `Path(ep_dir).resolve()`（✔ 2026-09-18 已改）。
+- **出图清单表两列写法被 lint 判成"出图清单缺行"**：`scaffold_episode.py` 认两列 `|镜号|画面描述|` 和三列 `|镜号|左边|右边|`，`lint_script.py` 只认三列，同一张表两个脚本口径不一。修法：lint 的 `parse_illus_table` 补两列分支（✔ 2026-09-18 已改）。
+- `preview_pack.py` 不带 `--md` 时屏幕文字是 0 条（旁白和插画照出），预设要求出预审包时等于交了个残件（✔ 2026-09-18 已把参数写进 04-delivery 命令）。
+- **只在动作过程中出现的错误，终审结构上看不见**：`review.py` 每镜只抓「画完」那一帧，`shot_metrics.py` 每镜只采一个时刻，元素落在半路、两个 tween 抢同一个属性、`draw()` 的 `tl.set(opacity:1)` 把 `remember()` 的 dim 盖回去——这类问题到「画完时刻」已经复原。修法：终审加跑 `filmstrip.py` 密集抽帧（✔ 2026-09-18 新增，已写进 04-delivery §2）。写 episode.js 时的对应纪律：**同一个节点的 opacity 只能由一处控制**，背景元素要在 dim 时刻之前画完。
+- **进度表长出两行同一集**：其它脚本 import `progress.update()` 时传目录名（`第1集`），人在命令行常传裸数字（`1`），集号没归一。修法：`update()` 里数字集号统一成 `第N集`（✔ 2026-09-18 已改）。
+- **写死字体路径会静默回退**：macOS 26 起苹方不在 `/System/Library/Fonts/PingFang.ttc`，而在 `/System/Library/AssetsV2/com_apple_MobileAsset_Font*/<哈希>.asset/AssetData/PingFang.ttc`——**路径里的哈希每次系统更新都可能变**。`cover.py` 原先写死路径，找不到就回退 STHeiti，不报错只警告，封面字体和片内程序层对不上。修法：字体查找收进 `lib/fonts.py`（glob 找文件 + 逐个 index 读 `getname()` 按字体名匹配字重，因为 ttc 里 SC/TC/HK × Regular/Medium/Semibold 的打包顺序不保证跨版本稳定），`cover.py` / `review.py` / `filmstrip.py` 都改用它；smoke 第 9 项断言三个字重都找得到（✔ 2026-09-19 已改）。
+
+- `motion_check.py` 对小元素动作不敏感：320×180 灰度抽样下，一条短横线出现、一个小圆点沿线跑都测不出（实测给某镜加了中途事件后读数纹丝不动）。它只用来找"整镜没动"的离群镜，判定以抓帧目视为准；要让它测到，得是主图级别的变化。
+
+- `cover.py` / `chapters.py` 读 `EP.title` 时标题含另一种引号会截断（`AI 怎么"看懂"图`），已改成按外层引号匹配（✔）；老写法的集没有 episode.js，用 `--title` 兜底（✔）。
+
+- 火山 TTS 会偶发 read timeout，一次超时会中断整集合成；再跑一次即可，脚本会清掉带 error 的残留元数据（✔ synthesize.py）。
+
+## 渲染
+- **长片渲染会爆磁盘**：超过默认流式上限（约 300 秒）退回磁盘帧捕获，381 秒的片子索要约 95 GB 临时空间。修法：`PRODUCER_STREAMING_ENCODE_MAX_DURATION_SECONDS=1200`（✔ 04-delivery 命令）；`--low-memory-mode` 不是流式开关。渲前 `doctor.sh` 查磁盘（✔）。
+- 会话里的后台 Bash 任务在工具调用返回后会被结束：长渲染必须 `nohup … &`（✔ 文档）。
+- Homebrew 普通 `ffmpeg` 没有 libass，烧字幕失败：装 `ffmpeg-full`（keg-only）并把 `/opt/homebrew/opt/ffmpeg-full/bin` 放 PATH 最前；非交互 shell 找到的仍是精简版时显式传全路径（✔ doctor.sh 报）。
+- 渲染器默认输出长边 1080；出 1080p 成片要 `--cap-long-edge 1920`（逐笔路线的白板后端）。
+
+## 写稿
+- 手估字数系统性偏高 20–35%，连带每镜时间码全错：一律 `retime.py` 回填（✔）。
+- 三路审稿必冲突（对账要贴原文、受众要听得懂）：主循环裁决并写进 spec，不让它只活在对话里。
+- 长稿派子 agent 会被截断、口吻漂移：逐集主循环亲自写，派工只做机械活。
+- 第一集开场砸五个新词是弃看率最高的写法：先用一个知识点解掉主角的麻烦再推广。
+
+## 多 agent
+- 系列程序层逐集派子代理并行可行（5 集约 35 分钟出齐，质量与主循环手写齐平）；硬边界：子代理不渲染、不写交付目录，终审与渲染留主循环。
+- 子代理的自评要抽验（看它两张截图），但别急着断定它错，先把证据看全。
+- 一个 agent 只派一件重活；读过大量图片的 agent 再派重活容易"input too long"。

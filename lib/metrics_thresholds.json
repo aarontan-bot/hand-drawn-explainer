@@ -1,0 +1,10 @@
+{
+ "chars_max": 65,
+ "min_font": 40,
+ "hero_ratio_min": 0.33,
+ "colors_max": 2,
+ "max_still": 13.0,
+ "still_ratio": 0.95,
+ "note": "chars_max 由 --baseline 统计 P90 后填入",
+ "source": "chars_max=65 取自提示词工程 9 集（第1–9集）shot_metrics.py --baseline 的 P90，2026-09-18；max_still=13.0/still_ratio=0.95 取自同 9 集 motion_check.py --baseline 的 P90，2026-09-18"
+}
