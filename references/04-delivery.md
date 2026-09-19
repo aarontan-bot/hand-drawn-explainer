@@ -37,13 +37,16 @@ python3 $HDE/lib/progress.py . 第N集 终审 "✅ 高0中0低N"        # 终审
 
 ## 3. 交付件（三条命令是机械活，派 fast-worker 跑，主循环只看结果）
 ```bash
-python3 $HDE/lib/cover.py 第N集 <镜号> 交付/封面_第N集.png      # 指定镜抓帧 + 标题 + Logo（若有）
+python3 $HDE/lib/cover.py 第N集 交付/封面_第N集.png             # 自动挑 3 镜各出一张，用 Read 看过挑一张留下
+#   --shot N 指定镜号 ｜ --ratio 3:4 出竖版 ｜ --auto 5 多给几张备选
 python3 $HDE/lib/chapters.py 第N集 --md 脚本/<集>.md > 交付/章节_第N集.txt   # 由 timeline.json 生成章节时间戳
 python3 $HDE/lib/preview_pack.py 第N集 交付/预审包_第N集.html --md 脚本/<集>.md   # 全部插画 + 屏幕文字 + 旁白，逐条可勾（预设要求时才出）
 python3 $HDE/lib/progress.py . 第N集 交付 "✅ <日期>"
 ```
 `--md` 现在可以不给：两个脚本会从 `series.json` 往上定位项目、按集号自己找到脚本 md，并在 stderr 说明用了哪个文件。显式传 `--md` 仍以命令行为准（脚本在别处、或一集对多稿时用）。真找不到才退化——`chapters.py` 的章节名退成旁白摘录、`preview_pack.py` 的屏幕文字变 0 条，那时预审包等于残件。
 预审包页脚的「旁白总字数」与本集卡片的「旁白字数」同源（都走 `script_md.narration_chars`，去标点空白计数）。2026-09-18 之前 `preview_pack.py` 只去空白不去标点，同一个标签在两处给出两个数，现已统一——老预审包上的数字会比现在偏大，不是 bug。
+封面不是「抓一帧加个标题」：成片构图是为边听边看设计的（内容压在安全区内、底部留给字幕条），直接拿一帧当封面必然主体小、重心沉。`cover.py` 会框出内容的真实包围盒、放大主体，再把标题摆进腾出的留白——16:9 左文右图，3:4 上图下文。挑镜的评分口径写在脚本的文档串里，**出完一定要用 Read 真的看过再选**，自动挑只保证"不挑到空镜和扁条"，保证不了哪张最好看。
+
 交付目录里放：最终版完整 mp4（1920×1080 / 30fps / H.264）、`.srt`、封面、章节、README（[templates/delivery-readme.md](../templates/delivery-readme.md)：成片规格、每集标题时长与贯穿隐喻、配音来源、质检结论、已知保留项、发布前必做）。只放最终版；过程件留工程目录；同名不同内容的旧成片保留并加版本后缀。
 交付目录的绝对位置与是否要预审包按预设；通用版缺省 `<项目根>/交付/`。
 
