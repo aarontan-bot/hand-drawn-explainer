@@ -59,6 +59,12 @@ def classify(shots, table):
             kinds[no] = 'title'
         elif i == n - 1:
             kinds[no] = 'end'
+            # 末镜固定 3 秒且不合成旁白。脚本把片尾折进最后一个有旁白的镜时，
+            # 那段旁白会被静默吃掉（成片里金句直接没了），所以这里必须出声。
+            if s.narration.strip() and not s.is_silent:
+                print(f'警告：镜 {no:02} 是末镜，按片尾处理（kind=end，固定 3 秒，不合成旁白），'
+                      f'但它有 {s.narration_chars} 字旁白——这段会被丢掉。'
+                      f'片尾要在脚本里独立成一镜，不要折进最后一个有旁白的镜。', file=sys.stderr)
         elif s.method == '插画':
             row = table.get(no)
             if row is None:
